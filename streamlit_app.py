@@ -115,3 +115,12 @@ if 'excel_data' in st.session_state:
         file_name="datos_extraidos.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+# Pie de página minimalista
+st.markdown("---")
+st.markdown(
+    "<footer style='text-align: center; font-size: 0.8em; color: gray;'>"
+    "Creado por Leandro Couretot, Prohibida su comercialización, herramienta de uso personal"
+    "</footer>",
+    unsafe_allow_html=True
+)
