@@ -31,65 +31,62 @@ def extract_start_date(text):
         return match.group(1)
     return None
 
-# Función para convertir PDF a Excel
 def convert_pdf_to_excel(pdf_file):
-    # Abre el archivo PDF en modo lectura binaria
-    with open(pdf_file, 'rb') as file:
-        # Crea un lector de PyPDF2
-        reader = PyPDF2.PdfReader(file)
+    # Usa el contenido del archivo subido directamente
+    reader = PyPDF2.PdfReader(pdf_file)
 
-        # Extrae texto solo de la primera página
-        first_page = reader.pages[0]
-        full_text = first_page.extract_text()
+    # Extrae texto solo de la primera página
+    first_page = reader.pages[0]
+    full_text = first_page.extract_text()
 
-        # Extraer los datos
-        cuil = extract_cuil(full_text)
-        document_number = extract_document_number(cuil)
-        name = extract_name(full_text)
-        start_date = extract_start_date(full_text)
+    # Extraer los datos
+    cuil = extract_cuil(full_text)
+    document_number = extract_document_number(cuil)
+    name = extract_name(full_text)
+    start_date = extract_start_date(full_text)
 
-        # Procesar el nombre para dividir en apellido y nombre
-        if name:
-            name_parts = name.split()
-            apellido = name_parts[0] if name_parts else ""
-            nombre = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
-        else:
-            apellido = ""
-            nombre = ""
+    # Procesar el nombre para dividir en apellido y nombre
+    if name:
+        name_parts = name.split()
+        apellido = name_parts[0] if name_parts else ""
+        nombre = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+    else:
+        apellido = ""
+        nombre = ""
 
-        # Crear el DataFrame con los datos requeridos
-        data = {
-            "Nro. Legajo": [0],
-            "Apellido": [apellido],
-            "Nombre": [nombre],
-            "Sexo": [0],
-            "Nacionalidad": ["argentina"],
-            "Tipo Documento": ["dni"],
-            "CUIL": [cuil],
-            "Fecha Nacimiento": ["01/01/2000"],
-            "Nro. Documento": [document_number],
-            "Estado Civil": ["soltero"],
-            "Calle": ["Mitre"],
-            "Nro. Calle": [1000],
-            "Código Postal": [1400],
-            "Provincia": ["Prov. Bs As"],
-            "Fecha de Antigüedad Rec.": [start_date],
-            "Fecha de Ingreso": [start_date],
-            "Forma de Pago": ["efectivo"]
-        }
+    # Crear el DataFrame con los datos requeridos
+    data = {
+        "Nro. Legajo": [0],
+        "Apellido": [apellido],
+        "Nombre": [nombre],
+        "Sexo": [0],
+        "Nacionalidad": ["argentina"],
+        "Tipo Documento": ["dni"],
+        "CUIL": [cuil],
+        "Fecha Nacimiento": ["01/01/2000"],
+        "Nro. Documento": [document_number],
+        "Estado Civil": ["soltero"],
+        "Calle": ["Mitre"],
+        "Nro. Calle": [1000],
+        "Código Postal": [1400],
+        "Provincia": ["Prov. Bs As"],
+        "Fecha de Antigüedad Rec.": [start_date],
+        "Fecha de Ingreso": [start_date],
+        "Forma de Pago": ["efectivo"]
+    }
 
-        df = pd.DataFrame(data)
+    df = pd.DataFrame(data)
 
-        # Guardar el DataFrame en un archivo en memoria
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False)
-        output.seek(0)
-        
-        return output
+    # Guardar el DataFrame en un archivo en memoria
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+    output.seek(0)
+    
+    return output
 
 # Título de la aplicación
-st.title("Conversor de PDF a Excel")
+st.title("Conversor de PDF a Excel 1")
 
 # Subir archivo PDF
 uploaded_file = st.file_uploader("Selecciona un archivo PDF", type="pdf")
