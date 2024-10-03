@@ -3,8 +3,6 @@ import pandas as pd
 import PyPDF2
 import re
 import io
-import logging
-
 
 # Función para extraer el CUIL del texto
 def extract_cuil(text):
@@ -33,8 +31,13 @@ def extract_start_date(text):
         return match.group(1)
     return None
 
-def convert_pdf_to_excel(pdf_file):
-    try:
+# Función para convertir múltiples PDFs a Excel
+def convert_pdfs_to_excel(pdf_files):
+    # Lista para almacenar los datos de cada PDF
+    data_list = []
+
+    # Iterar sobre cada archivo PDF subido
+    for pdf_file in pdf_files:
         # Usa el contenido del archivo subido directamente
         reader = PyPDF2.PdfReader(pdf_file)
 
@@ -57,55 +60,58 @@ def convert_pdf_to_excel(pdf_file):
             apellido = ""
             nombre = ""
 
-        # Crear el DataFrame con los datos requeridos
+        # Añadir los datos a la lista
         data = {
-            "Nro. Legajo": [0],
-            "Apellido": [apellido],
-            "Nombre": [nombre],
-            "Sexo": [0],
-            "Nacionalidad": ["argentina"],
-            "Tipo Documento": ["dni"],
-            "CUIL": [cuil],
-            "Fecha Nacimiento": ["01/01/2000"],
-            "Nro. Documento": [document_number],
-            "Estado Civil": ["soltero"],
-            "Calle": ["Mitre"],
-            "Nro. Calle": [1000],
-            "Código Postal": [1400],
-            "Provincia": ["Prov. Bs As"],
-            "Fecha de Antigüedad Rec.": [start_date],
-            "Fecha de Ingreso": [start_date],
-            "Forma de Pago": ["efectivo"]
+            "Nro. Legajo": 0,
+            "Apellido": apellido,
+            "Nombre": nombre,
+            "Sexo": 0,
+            "Nacionalidad": "argentina",
+            "Tipo Documento": "dni",
+            "CUIL": cuil,
+            "Fecha Nacimiento": "01/01/2000",
+            "Nro. Documento": document_number,
+            "Estado Civil": "soltero",
+            "Calle": "Mitre",
+            "Nro. Calle": 1000,
+            "Código Postal": 1400,
+            "Provincia": "Prov. Bs As",
+            "Fecha de Antigüedad Rec.": start_date,
+            "Fecha de Ingreso": start_date,
+            "Forma de Pago": "efectivo"
         }
 
-        df = pd.DataFrame(data)
+        data_list.append(data)
 
-        # Guardar el DataFrame en un archivo en memoria
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False)
-        output.seek(0)
-        
-        return output
-    except Exception as e:
-        logging.error(f"Error al convertir PDF a Excel: {e}")
-        return None
+    # Crear el DataFrame con todos los datos acumulados
+    df = pd.DataFrame(data_list)
+
+    # Guardar el DataFrame en un archivo en memoria
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+    output.seek(0)
+    
+    return output
 
 # Título de la aplicación
-st.title("Conversor de PDF a Excel 2")
+st.title("Conversor de múltiples PDFs a Excel")
 
-# Subir archivo PDF
-uploaded_file = st.file_uploader("Selecciona un archivo PDF", type="pdf")
+# Subir archivos PDF (múltiples)
+uploaded_files = st.file_uploader("Selecciona uno o más archivos PDF", type="pdf", accept_multiple_files=True)
 
-# Botón para iniciar la conversión
-if uploaded_file is not None:
-    # Llama a tu función de conversión
-    excel_data = convert_pdf_to_excel(uploaded_file)
+# Botón para convertir los PDFs a Excel
+if uploaded_files:
+    if st.button("Convertir PDFs a Excel"):
+        excel_data = convert_pdfs_to_excel(uploaded_files)
+        st.session_state['excel_data'] = excel_data
+        st.success("Conversión completada. Ahora puedes descargar el archivo Excel.")
 
-    # Descarga el archivo Excel
+# Botón para descargar el archivo Excel
+if 'excel_data' in st.session_state:
     st.download_button(
         label="Descargar Excel",
-        data=excel_data,
+        data=st.session_state['excel_data'],
         file_name="datos_extraidos.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
