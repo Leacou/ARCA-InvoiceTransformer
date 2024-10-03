@@ -62,7 +62,7 @@ def convert_pdfs_to_excel(pdf_files):
 
         # Añadir los datos a la lista
         data = {
-            "Nro. Legajo": 0,
+            "Nro. Legajo": "",
             "Apellido": apellido,
             "Nombre": nombre,
             "Sexo": 0,
